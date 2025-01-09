@@ -28,7 +28,6 @@ router.post("/signup", async (req, res) => {
                 role: parsedData.data.type === "admin" ? "Admin" : "User",
             }
         })
-        console.log("🚀 ~ router.post ~ signup:", parsedData.data.username, parsedData.data.type)
         res.json({
             userId: user.id,
         })
@@ -69,7 +68,6 @@ router.post("/signin", async (req, res) => {
         }, JWT_SECRET, {
             expiresIn: "24h",
         })
-        console.log("🚀 ~ router.post ~ token:", token, user.id, user.role, parsedData.data.username)
         res.json({
             message: "signin",
             token,

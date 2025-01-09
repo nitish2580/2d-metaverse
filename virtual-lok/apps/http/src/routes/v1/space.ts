@@ -23,6 +23,7 @@ spaceRouter.post("/", userMiddleware, async (req: Request, res: Response) => {
             }
         })
         res.json({ spaceId: space.id });
+        return;
     }
 
     const map = await client.map.findUnique({
@@ -47,14 +48,14 @@ spaceRouter.post("/", userMiddleware, async (req: Request, res: Response) => {
                 name: parsedData.data.name,
                 width: map.width,
                 height: map.height,
-                creatorId: req.auth.userId as string,
+                creatorId: req.auth.userId! as string,
             }
         })
 
         await client.spaceElements.createMany({
             data: map.mapElements.map((element) => ({
                 spaceId: space.id,
-                elementId: element.id,
+                elementId: element.elementId,
                 x: element.x!,
                 y: element.y!,
             }))
@@ -62,6 +63,38 @@ spaceRouter.post("/", userMiddleware, async (req: Request, res: Response) => {
         return space;
     })
     res.json({ spaceId: space.id })
+})
+
+spaceRouter.delete("/element", userMiddleware, async (req: Request, res: Response) => {
+    const parsedData = DeleteElementSchema.safeParse(req.body);
+    console.log("🚀 ~ spaceRouter.delete ~ parsedData: delete", parsedData)
+
+    if (!parsedData.success) {
+        res.status(400).json({ message: "Validation Failed" });
+        return;
+    }
+
+    const spaceElement = await client.spaceElements.findFirst({
+        where: {
+            id: req.body.id as string,
+        },
+        include: {
+            space: true,
+        }
+    })
+
+    if (!spaceElement?.space.creatorId || spaceElement.space.creatorId !== req.auth.userId) {
+        res.status(400).json({ message: "Unauthorized" });
+        return;
+    }
+
+    await client.spaceElements.delete({
+        where: {
+            id: parsedData.data.id,
+        }
+    })
+    res.json({ message: "Element deleted" });
+    return;
 })
 
 spaceRouter.delete("/:spaceId", userMiddleware, async (req, res) => {
@@ -93,7 +126,7 @@ spaceRouter.delete("/:spaceId", userMiddleware, async (req, res) => {
 })
 
 spaceRouter.get("/all", userMiddleware, async (req, res) => {
-
+    console.log("🚀 ~ spaceRouter.get ~ req.auth.userId:", req.auth.userId)
     const spaces = await client.space.findMany({
         where: {
             creatorId: req.auth.userId!,
@@ -106,6 +139,8 @@ spaceRouter.get("/all", userMiddleware, async (req, res) => {
             thumbnail: true,
         }
     })
+
+    console.log("🚀 ~ spaceRouter.get ~ spaces:", spaces)
 
     res.json(({
         spaces: spaces.map((space) => ({
@@ -155,36 +190,6 @@ spaceRouter.post("/element", userMiddleware, async (req, res) => {
         }
     })
     res.json({ message: "Element added" });
-})
-
-spaceRouter.delete("/element", async (req: Request, res: Response) => {
-    const parsedData = DeleteElementSchema.safeParse(req.body);
-
-    if (!parsedData.success) {
-        res.status(400).json({ message: "Validation Failed" });
-        return;
-    }
-
-    const spaceElement = await client.spaceElements.findFirst({
-        where: {
-            id: req.body.id as string,
-        },
-        include: {
-            space: true,
-        }
-    })
-
-    if (!spaceElement?.space.creatorId || spaceElement.space.creatorId !== req.auth.userId) {
-        res.status(400).json({ message: "Unauthorized" });
-        return;
-    }
-
-    await client.spaceElements.delete({
-        where: {
-            id: parsedData.data.id,
-        }
-    })
-    res.json({ message: "Element deleted" });
 })
 
 spaceRouter.get("/:spaceId", userMiddleware, async (req, res) => {

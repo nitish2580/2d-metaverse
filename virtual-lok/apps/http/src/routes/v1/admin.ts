@@ -1,5 +1,5 @@
 import { Request, Router, Response } from "express";
-import { CreateAvatarSchema, CreateElementScehma, CreateMapSchema } from "../../types";
+import { CreateAvatarSchema, CreateElementScehma, CreateMapSchema, UpdateElementSchema } from "../../types";
 import { adminMiddleware } from "../../middlewares/admin";
 import client from "@repo/db/client";
 
@@ -26,14 +26,16 @@ adminRouter.post("/element", adminMiddleware, async (req: Request, res: Response
     return;
 })
 
-adminRouter.put("/:elementId", adminMiddleware, async (req: Request, res: Response) => {
-    const parsedData = CreateElementScehma.safeParse(req.body);
+adminRouter.put("/element/:elementId", adminMiddleware, async (req: Request, res: Response) => {
+    const parsedData = UpdateElementSchema.safeParse(req.body);
+    console.log("🚀 ~ adminRouter.put ~ parsedData:", parsedData)
 
     if (!parsedData.success) {
         res.status(400).json({ message: "Validation Failed" });
         return;
     }
 
+    console.log("🚀 ~ adminRouter.put ~ req.params.elementId:", JSON.stringify(req.params))
     await client.element.update({
         where: {
             id: req.params.elementId,
@@ -45,7 +47,7 @@ adminRouter.put("/:elementId", adminMiddleware, async (req: Request, res: Respon
     res.status(200).json({ message: "Element updated" });
 })
 
-adminRouter.post("/avatar", async (req: Request, res: Response) => {
+adminRouter.post("/avatar", adminMiddleware, async (req: Request, res: Response) => {
     const parsedData = CreateAvatarSchema.safeParse(req.body);
 
     if (!parsedData.success) {
@@ -60,8 +62,7 @@ adminRouter.post("/avatar", async (req: Request, res: Response) => {
         }
     })
 
-    console.log("🚀 ~ adminRouter.post ~ avatar:", avatar)
-    res.status(201).json({ message: "Avatar created", id: avatar.id });
+    res.status(201).json({ avatarId: avatar.id })
     return;
 })
 
