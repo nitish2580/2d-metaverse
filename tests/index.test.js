@@ -322,6 +322,7 @@ describe("Space information", () => {
             password: password,
         });
         adminToken = response.data.token;
+        console.log("🚀 ~ beforeAll ~ adminToken:", adminToken)
 
         // adminId = signupResponse?.data?.userId;
         // const response = await axios.post(`${BACKEND_URL}/api/v1/user/signin`, {
@@ -348,6 +349,7 @@ describe("Space information", () => {
             }
         );
         userToken = userSigninResponse.data.token;
+        console.log("🚀 ~ beforeAll ~ userToken:", userToken)
 
         const elment1 = await axios.post(
             `${BACKEND_URL}/api/v1/admin/element`,
@@ -468,7 +470,7 @@ describe("Space information", () => {
             `${BACKEND_URL}/api/v1/space`,
             {
                 name: "Test",
-                dimensions: "100x200",
+                dimensions: "10x10",
                 mapId: mapId,
             },
             {
@@ -477,6 +479,7 @@ describe("Space information", () => {
                 },
             }
         );
+        console.log("🚀 ~ test ~ response:", response.data.spaceId)
         expect(response?.status).toBe(200);
         expect(response?.data.spaceId).toBeDefined();
         // spaceId = response?.dagta?.spaceId;
@@ -1175,13 +1178,14 @@ describe("websocket test", () => {
     let user1y;
     let user2x;
     let user2y;
+    let count = 0;
 
     async function waitForPopLatestMessage(messageArray) {
         return new Promise(resolve => {
             if (messageArray.length > 0) {
                 resolve(messageArray.shift())
             } else {
-                const interval = setInterval(() => {
+                let interval = setInterval(() => {
                     if (messageArray.length > 0) {
                         resolve(messageArray.shift());
                         clearInterval(interval);
@@ -1375,7 +1379,7 @@ describe("websocket test", () => {
             }
         }))
 
-        console.log("insixce first test1")
+        console.log("indixce first test1")
         const message1 = await waitForPopLatestMessage(ws1Messages);
         console.log("🚀 ~ test ~ message1:", message1)
         console.log("insixce first test2")
@@ -1393,9 +1397,13 @@ describe("websocket test", () => {
         const message2 = await waitForPopLatestMessage(ws2Messages);
         const message3 = await waitForPopLatestMessage(ws1Messages);
         console.log("🚀 ~ test ~ message3:", message3)
+        console.log("🚀 ~ test ~ message1:", message1)
+        console.log("🚀 ~ test ~ message2:", message2)
 
         expect(message1.type).toBe("space-joined");
         expect(message2.type).toBe("space-joined");
+        expect(message1.payload.users.length).toBe(0);
+        expect(message2.payload.users.length).toBe(1);
         expect(message3.type).toBe("user-joined");
         expect(message3.payload.x).toBe(message2.payload.spawn.x);
         expect(message3.payload.y).toBe(message2.payload.spawn.y);

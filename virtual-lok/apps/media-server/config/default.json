@@ -1,0 +1,42 @@
+{
+  "mediasoup": {
+    "worker": {
+      "rtcMinPort": 40000,
+      "rtcMaxPort": 49999,
+      "logLevel": "warn"
+    },
+    "router": {
+      "mediaCodecs": [
+        {
+          "kind": "audio",
+          "mimeType": "audio/opus",
+          "clockRate": 48000,
+          "channels": 2
+        },
+        {
+          "kind": "video",
+          "mimeType": "video/VP8",
+          "clockRate": 90000,
+          "parameters": {
+            "x-google-start-bitrate": 1000
+          }
+        }
+      ]
+    }
+  },
+  "websocket": {
+    "port": 8080
+  },
+  "stun": {
+    "servers": [{ "urls": "stun:stun.l.google.com:19302" }]
+  },
+  "turn": {
+    "servers": [
+      {
+        "urls": "turn:your-turn-server.com",
+        "username": "your-username",
+        "credential": "your-password"
+      }
+    ]
+  }
+}

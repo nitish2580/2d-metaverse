@@ -17,7 +17,6 @@ userRouter.post("/metadata", userMiddleware, async (req, res) => {
         auth: { userId },
     } = req;
     const parsedData = updateMetaDataSchema.safeParse(req.body);
-    // console.log("🚀 ~ userRouter.post ~ parsedData:", parsedData)
     if (!parsedData.success) {
         console.log("Parsed data failed")
         res.status(400).json({ message: "Validation Failed" });
